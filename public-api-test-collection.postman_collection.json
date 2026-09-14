@@ -1,0 +1,1394 @@
+{
+  "info": {
+    "_postman_id": "1d6f0d44-4042-40ee-844b-3c057b19c98a",
+    "name": "Public API Test Collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "57105677",
+    "description": "Hand-built and audited API test collection covering three public APIs: JSONPlaceholder (full CRUD), the Rick and Morty API (pagination boundaries), and OpenWeatherMap (real authentication). 23 requests, 129 assertions, split between happy paths and negative paths.\n\nAll base URLs and the OpenWeatherMap key are environment variables - nothing is hardcoded. Import the accompanying environment template, supply your own OpenWeatherMap key, and the collection runs end to end.\n\nThree requests document defects rather than expected behavior: JSONPlaceholder answers HTTP 500 for a PUT to a nonexistent resource and for a malformed body, and the Rick and Morty API answers HTTP 500 for a non-numeric id - all three are client-side input errors that should be 4xx. Those tests assert the observed status so a future fix shows up as a failure."
+  },
+  "item": [
+    {
+      "name": "JSONPlaceholder",
+      "item": [
+        {
+          "name": "JSONPlaceholder - GET all posts",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is less than 1000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                  "});",
+                  "",
+                  "pm.test(\"Response body is an array\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.be.an(\"array\");",
+                  "});",
+                  "",
+                  "pm.test(\"Array is non-empty\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.length.above(0);",
+                  "});",
+                  "",
+                  "pm.test(\"First object has expected fields with correct types\", function () {",
+                  "    const firstPost = pm.response.json()[0];",
+                  "    pm.expect(firstPost).to.have.property(\"userId\").that.is.a(\"number\");",
+                  "    pm.expect(firstPost).to.have.property(\"id\").that.is.a(\"number\");",
+                  "    pm.expect(firstPost).to.have.property(\"title\").that.is.a(\"string\");",
+                  "    pm.expect(firstPost).to.have.property(\"body\").that.is.a(\"string\");",
+                  "});",
+                  "",
+                  "pm.test(\"Content-Type header is application/json\", function () {",
+                  "    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{jsonplaceholder_url}}/posts",
+              "host": [
+                "{{jsonplaceholder_url}}"
+              ],
+              "path": [
+                "posts"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "JSONPlaceholder - GET single post",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is less than 1000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(1000);",
+                  "});",
+                  "",
+                  "pm.test(\"Response body is a JSON object\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.be.an(\"object\").and.not.an(\"array\");",
+                  "});",
+                  "",
+                  "pm.test(\"Field 'userId' exists and is a number\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property(\"userId\");",
+                  "    pm.expect(json.userId).to.be.a(\"number\");",
+                  "});",
+                  "",
+                  "pm.test(\"Field 'title' exists and is a string\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property(\"title\");",
+                  "    pm.expect(json.title).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{jsonplaceholder_url}}/posts/1",
+              "host": [
+                "{{jsonplaceholder_url}}"
+              ],
+              "path": [
+                "posts",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "JSONPlaceholder - GET post not found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is less than 2000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "pm.test(\"Body deep-equals {}\", function () {",
+                  "    pm.expect(pm.response.json()).to.deep.equal({});",
+                  "});",
+                  "",
+                  "pm.test(\"Content-Type header is present\", function () {",
+                  "    pm.expect(pm.response.headers.get(\"Content-Type\")).to.exist;",
+                  "});",
+                  "",
+                  "pm.test(\"Body does not contain a populated success payload\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.not.have.property(\"results\");",
+                  "    pm.expect(json).to.not.have.property(\"main\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{jsonplaceholder_url}}/posts/9999",
+              "host": [
+                "{{jsonplaceholder_url}}"
+              ],
+              "path": [
+                "posts",
+                "9999"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "JSONPlaceholder - POST create post",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is less than 2000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "pm.test(\"Response body is valid JSON\", function () {",
+                  "    pm.response.to.be.json;",
+                  "    pm.expect(pm.response.json()).to.be.an(\"object\");",
+                  "});",
+                  "",
+                  "pm.test(\"Response echoes back the sent 'title' value\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.title).to.eql(\"My first Postman post\");",
+                  "});",
+                  "",
+                  "pm.test(\"Response echoes back the sent 'body' value\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.body).to.eql(\"Testing a POST request.\");",
+                  "});",
+                  "",
+                  "pm.test(\"json.id === 101\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.id).to.equal(101);",
+                  "});",
+                  "",
+                  "pm.test(\"json.userId === 1\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.userId).to.equal(1);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\": \"My first Postman post\", \"body\": \"Testing a POST request.\", \"userId\": 1}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{jsonplaceholder_url}}/posts",
+              "host": [
+                "{{jsonplaceholder_url}}"
+              ],
+              "path": [
+                "posts"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "JSONPlaceholder - PUT update post",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is less than 2000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "pm.test(\"Response body is valid JSON\", function () {",
+                  "    pm.response.to.be.json;",
+                  "    pm.expect(pm.response.json()).to.be.an(\"object\");",
+                  "});",
+                  "",
+                  "pm.test(\"Response echoes back the sent 'title' value\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.title).to.eql(\"Updated title\");",
+                  "});",
+                  "",
+                  "pm.test(\"Response echoes back the sent 'body' value\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.body).to.eql(\"Updated body text.\");",
+                  "});",
+                  "",
+                  "pm.test(\"json.id === 1\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.id).to.equal(1);",
+                  "});",
+                  "",
+                  "pm.test(\"json.userId === 1\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.userId).to.equal(1);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"id\": 1, \"title\": \"Updated title\", \"body\": \"Updated body text.\", \"userId\": 1}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{jsonplaceholder_url}}/posts/1",
+              "host": [
+                "{{jsonplaceholder_url}}"
+              ],
+              "path": [
+                "posts",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "JSONPlaceholder - PATCH update post title",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is less than 2000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "pm.test(\"Response body is valid JSON\", function () {",
+                  "    pm.response.to.be.json;",
+                  "    pm.expect(pm.response.json()).to.be.an(\"object\");",
+                  "});",
+                  "",
+                  "pm.test(\"Response echoes back the patched 'title' value\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.title).to.eql(\"Just changing the title\");",
+                  "});",
+                  "",
+                  "pm.test(\"Response contains the correct 'id' for the patched resource\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.id).to.eql(1);",
+                  "});",
+                  "",
+                  "pm.test(\"json.id === 1 (unpatched field survived)\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.id).to.equal(1);",
+                  "});",
+                  "",
+                  "pm.test(\"json.userId is a number equal to 1 (unpatched field survived)\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.userId).to.be.a(\"number\").and.to.equal(1);",
+                  "});",
+                  "",
+                  "pm.test(\"json.body is a non-empty string (unpatched field survived)\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.body).to.be.a(\"string\").and.to.have.length.above(0);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\": \"Just changing the title\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{jsonplaceholder_url}}/posts/1",
+              "host": [
+                "{{jsonplaceholder_url}}"
+              ],
+              "path": [
+                "posts",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "JSONPlaceholder - DELETE post",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is less than 2000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "pm.test(\"Response body is empty or an empty object\", function () {",
+                  "    const text = pm.response.text().trim();",
+                  "    const isEmptyBody = text === \"\" || text === \"{}\";",
+                  "    pm.expect(isEmptyBody).to.be.true;",
+                  "});",
+                  "",
+                  "pm.test(\"Content-Type header includes application/json\", function () {",
+                  "    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");",
+                  "});",
+                  "",
+                  "pm.test(\"Response body deep-equals {}\", function () {",
+                  "    pm.expect(pm.response.json()).to.deep.equal({});",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{jsonplaceholder_url}}/posts/1",
+              "host": [
+                "{{jsonplaceholder_url}}"
+              ],
+              "path": [
+                "posts",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "JSONPlaceholder - PUT update post not found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 500\", function () {",
+                  "    pm.response.to.have.status(500);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is under 2000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "pm.test(\"Body is not valid JSON\", function () {",
+                  "    let threw = false;",
+                  "    try {",
+                  "        pm.response.json();",
+                  "    } catch (e) {",
+                  "        threw = true;",
+                  "    }",
+                  "    pm.expect(threw).to.be.true;",
+                  "});",
+                  "",
+                  "pm.test(\"Body text does not echo the title 'x'\", function () {",
+                  "    pm.expect(pm.response.text()).to.not.include('\"title\":\"x\"');",
+                  "    pm.expect(pm.response.text()).to.not.include('\"title\": \"x\"');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": false
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"id\": 9999, \"title\": \"x\", \"body\": \"y\", \"userId\": 1}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{jsonplaceholder_url}}/posts/9999",
+              "host": [
+                "{{jsonplaceholder_url}}"
+              ],
+              "path": [
+                "posts",
+                "9999"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "JSONPlaceholder - POST create post malformed JSON",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 500\", function () {",
+                  "    pm.response.to.have.status(500);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is under 2000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "pm.test(\"Content-Type header does not include application/json\", function () {",
+                  "    pm.expect(pm.response.headers.get(\"Content-Type\")).to.not.include(\"application/json\");",
+                  "});",
+                  "",
+                  "pm.test(\"Body text contains 'SyntaxError'\", function () {",
+                  "    pm.expect(pm.response.text()).to.include(\"SyntaxError\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": false
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\": \"broken",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{jsonplaceholder_url}}/posts",
+              "host": [
+                "{{jsonplaceholder_url}}"
+              ],
+              "path": [
+                "posts"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "JSONPlaceholder - GET single post non-numeric id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is under 2000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "pm.test(\"Content-Type includes application/json\", function () {",
+                  "    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");",
+                  "});",
+                  "",
+                  "pm.test(\"Body parses to an object with zero keys (deep-equal {})\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.be.an(\"object\");",
+                  "    pm.expect(json).to.deep.equal({});",
+                  "});",
+                  "",
+                  "pm.test(\"No 'title' or 'id' property is present\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.not.have.property(\"title\");",
+                  "    pm.expect(json).to.not.have.property(\"id\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{jsonplaceholder_url}}/posts/abc",
+              "host": [
+                "{{jsonplaceholder_url}}"
+              ],
+              "path": [
+                "posts",
+                "abc"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "JSONPlaceholder - POST create post unicode",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 201\", function () {",
+                  "    pm.response.to.have.status(201);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is under 2000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "pm.test(\"json.title is strictly equal to 'Zürich 🤖 <b>'\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.title).to.equal(\"Zürich 🤖 <b>\");",
+                  "});",
+                  "",
+                  "pm.test(\"json.body is strictly equal to 'ü'\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.body).to.equal(\"ü\");",
+                  "});",
+                  "",
+                  "pm.test(\"json.userId === 1\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.userId).to.equal(1);",
+                  "});",
+                  "",
+                  "pm.test(\"json.id is a number\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.id).to.be.a(\"number\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "disabled": false
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"title\": \"Zürich 🤖 <b>\", \"body\": \"ü\", \"userId\": 1}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{jsonplaceholder_url}}/posts",
+              "host": [
+                "{{jsonplaceholder_url}}"
+              ],
+              "path": [
+                "posts"
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Rick and Morty",
+      "item": [
+        {
+          "name": "Rick and Morty - GET characters page beyond last",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is less than 2000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "pm.test(\"json.error === 'There is nothing here'\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.error).to.equal(\"There is nothing here\");",
+                  "});",
+                  "",
+                  "pm.test(\"Content-Type header is present\", function () {",
+                  "    pm.expect(pm.response.headers.get(\"Content-Type\")).to.exist;",
+                  "});",
+                  "",
+                  "pm.test(\"Body does not contain a populated success payload\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.not.have.property(\"results\");",
+                  "    pm.expect(json).to.not.have.property(\"main\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{rickandmorty_url}}/character?page=9999",
+              "host": [
+                "{{rickandmorty_url}}"
+              ],
+              "path": [
+                "character"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "9999"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Rick and Morty - GET single character",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is under 2000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "pm.test(\"Response body is a JSON object, not an array\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.be.an(\"object\").and.not.an(\"array\");",
+                  "});",
+                  "",
+                  "pm.test(\"Field 'id' exists and is a number\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property(\"id\");",
+                  "    pm.expect(json.id).to.be.a(\"number\");",
+                  "});",
+                  "",
+                  "pm.test(\"Field 'name' exists and is a string\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property(\"name\");",
+                  "    pm.expect(json.name).to.be.a(\"string\");",
+                  "});",
+                  "",
+                  "pm.test(\"Field 'status' exists and is a string\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property(\"status\");",
+                  "    pm.expect(json.status).to.be.a(\"string\");",
+                  "});",
+                  "",
+                  "pm.test(\"Field 'species' exists and is a string\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property(\"species\");",
+                  "    pm.expect(json.species).to.be.a(\"string\");",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{rickandmorty_url}}/character/1",
+              "host": [
+                "{{rickandmorty_url}}"
+              ],
+              "path": [
+                "character",
+                "1"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Rick and Morty - GET characters page 1",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is less than 2000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "pm.test(\"'info.count' is a number\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.info).to.be.an(\"object\");",
+                  "    pm.expect(json.info.count).to.be.a(\"number\");",
+                  "});",
+                  "",
+                  "pm.test(\"'results' is a non-empty array\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.results).to.be.an(\"array\").that.is.not.empty;",
+                  "});",
+                  "",
+                  "pm.test(\"First item in 'results' has expected fields with correct types\", function () {",
+                  "    const first = pm.response.json().results[0];",
+                  "    pm.expect(first.id).to.be.a(\"number\");",
+                  "    pm.expect(first.name).to.be.a(\"string\");",
+                  "    pm.expect(first.status).to.be.a(\"string\");",
+                  "    pm.expect(first.species).to.be.a(\"string\");",
+                  "    pm.expect(first.image).to.be.a(\"string\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{rickandmorty_url}}/character?page=1",
+              "host": [
+                "{{rickandmorty_url}}"
+              ],
+              "path": [
+                "character"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Rick and Morty - GET single character not found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is under 2000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "pm.test(\"Content-Type includes application/json\", function () {",
+                  "    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");",
+                  "});",
+                  "",
+                  "pm.test(\"json.error is exactly 'Character not found'\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.error).to.equal(\"Character not found\");",
+                  "});",
+                  "",
+                  "pm.test(\"Body has no 'id' or 'name' property\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.not.have.property(\"id\");",
+                  "    pm.expect(json).to.not.have.property(\"name\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{rickandmorty_url}}/character/0",
+              "host": [
+                "{{rickandmorty_url}}"
+              ],
+              "path": [
+                "character",
+                "0"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Rick and Morty - GET single character non-numeric id",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 500\", function () {",
+                  "    pm.response.to.have.status(500);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is under 2000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "pm.test(\"json.error is a non-empty string\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.error).to.be.a(\"string\").and.to.have.length.above(0);",
+                  "});",
+                  "",
+                  "pm.test(\"No 'results' property is present\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.not.have.property(\"results\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{rickandmorty_url}}/character/abc",
+              "host": [
+                "{{rickandmorty_url}}"
+              ],
+              "path": [
+                "character",
+                "abc"
+              ]
+            },
+            "description": "Defect finding: this endpoint returns HTTP 500 for a client-side input error (non-numeric id). A malformed path parameter is a client error and should return 400, not 500."
+          },
+          "response": []
+        },
+        {
+          "name": "Rick and Morty - GET characters page 0",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is under 2000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "pm.test(\"json.info.prev is null\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.info.prev).to.be.null;",
+                  "});",
+                  "",
+                  "pm.test(\"json.info.next ends with 'page=2'\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.info.next).to.be.a(\"string\").and.to.match(/page=2$/);",
+                  "});",
+                  "",
+                  "pm.test(\"json.results is an array of length 20\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.results).to.be.an(\"array\").with.lengthOf(20);",
+                  "});",
+                  "",
+                  "pm.test(\"json.results[0].id === 1\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.results[0].id).to.equal(1);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{rickandmorty_url}}/character?page=0",
+              "host": [
+                "{{rickandmorty_url}}"
+              ],
+              "path": [
+                "character"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "0"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Rick and Morty - GET characters last page",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is under 2000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "pm.test(\"json.info.next is null\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.info.next).to.be.null;",
+                  "});",
+                  "",
+                  "pm.test(\"json.info.prev ends with 'page=41'\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.info.prev).to.be.a(\"string\").and.to.match(/page=41$/);",
+                  "});",
+                  "",
+                  "pm.test(\"json.results is a non-empty array with length at most 20\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.results).to.be.an(\"array\").with.length.above(0).and.length.at.most(20);",
+                  "});",
+                  "",
+                  "pm.test(\"json.info.pages equals 42 (dataset size sentinel)\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.info.pages).to.equal(42);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{rickandmorty_url}}/character?page=42",
+              "host": [
+                "{{rickandmorty_url}}"
+              ],
+              "path": [
+                "character"
+              ],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "42"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Rick and Morty - GET characters by name emoji",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is under 2000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});",
+                  "",
+                  "pm.test(\"Content-Type includes application/json\", function () {",
+                  "    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");",
+                  "});",
+                  "",
+                  "pm.test(\"json.error is exactly 'There is nothing here'\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.error).to.equal(\"There is nothing here\");",
+                  "});",
+                  "",
+                  "pm.test(\"No 'results' property is present\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.not.have.property(\"results\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{rickandmorty_url}}/character",
+              "host": [
+                "{{rickandmorty_url}}"
+              ],
+              "path": [
+                "character"
+              ],
+              "query": [
+                {
+                  "key": "name",
+                  "value": "🤖"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "OpenWeatherMap",
+      "item": [
+        {
+          "name": "OpenWeatherMap - GET weather no key",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 401 Unauthorized\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is under 3000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(3000);",
+                  "});",
+                  "",
+                  "pm.test(\"json.cod === 401\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.cod).to.equal(401);",
+                  "});",
+                  "",
+                  "pm.test(\"json.message is a non-empty string\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.message).to.be.a(\"string\").and.to.have.length.above(0);",
+                  "});",
+                  "",
+                  "pm.test(\"Content-Type header is present\", function () {",
+                  "    pm.expect(pm.response.headers.get(\"Content-Type\")).to.exist;",
+                  "});",
+                  "",
+                  "pm.test(\"Body does not contain a populated success payload\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.not.have.property(\"results\");",
+                  "    pm.expect(json).to.not.have.property(\"main\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{openweather_url}}/weather?q=Boston,US",
+              "host": [
+                "{{openweather_url}}"
+              ],
+              "path": [
+                "weather"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "Boston,US"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "OpenWeatherMap - GET weather with key",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test(\"Status code is 200\", function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is under 3000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(3000);",
+                  "});",
+                  "",
+                  "pm.test(\"Response body is a JSON object, not an array\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.be.an(\"object\").and.not.an(\"array\");",
+                  "});",
+                  "",
+                  "pm.test(\"Field 'name' exists and is a string\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property(\"name\");",
+                  "    pm.expect(json.name).to.be.a(\"string\");",
+                  "});",
+                  "",
+                  "pm.test(\"Field 'main' exists and is an object\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property(\"main\");",
+                  "    pm.expect(json.main).to.be.an(\"object\");",
+                  "});",
+                  "",
+                  "pm.test(\"Field 'visibility' exists and is a number\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property(\"visibility\");",
+                  "    pm.expect(json.visibility).to.be.a(\"number\");",
+                  "});",
+                  "",
+                  "pm.test(\"Field 'cod' exists and is a number\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.have.property(\"cod\");",
+                  "    pm.expect(json.cod).to.be.a(\"number\");",
+                  "});"
+                ],
+                "type": "text/javascript",
+                "packages": {},
+                "requests": {}
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{openweather_url}}/weather?q=Boston,US&appid={{openweather_key}}",
+              "host": [
+                "{{openweather_url}}"
+              ],
+              "path": [
+                "weather"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "Boston,US"
+                },
+                {
+                  "key": "appid",
+                  "value": "{{openweather_key}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "OpenWeatherMap - GET weather invalid key",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 401\", function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is under 3000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(3000);",
+                  "});",
+                  "",
+                  "pm.test(\"Content-Type includes application/json\", function () {",
+                  "    pm.expect(pm.response.headers.get(\"Content-Type\")).to.include(\"application/json\");",
+                  "});",
+                  "",
+                  "pm.test(\"json.cod === 401\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.cod).to.equal(401);",
+                  "});",
+                  "",
+                  "pm.test(\"json.message includes 'Invalid API key'\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.message).to.include(\"Invalid API key\");",
+                  "});",
+                  "",
+                  "pm.test(\"No 'main' or 'weather' property is present\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.not.have.property(\"main\");",
+                  "    pm.expect(json).to.not.have.property(\"weather\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{openweather_url}}/weather?q=Boston,US&appid=invalidkey123",
+              "host": [
+                "{{openweather_url}}"
+              ],
+              "path": [
+                "weather"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "Boston,US"
+                },
+                {
+                  "key": "appid",
+                  "value": "invalidkey123"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "OpenWeatherMap - GET weather city not found",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Status code is 404\", function () {",
+                  "    pm.response.to.have.status(404);",
+                  "});",
+                  "",
+                  "pm.test(\"Response time is under 3000ms\", function () {",
+                  "    pm.expect(pm.response.responseTime).to.be.below(3000);",
+                  "});",
+                  "",
+                  "pm.test(\"json.cod equals '404' (string)\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.cod).to.equal(\"404\");",
+                  "});",
+                  "",
+                  "pm.test(\"json.message includes 'city not found'\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json.message).to.include(\"city not found\");",
+                  "});",
+                  "",
+                  "pm.test(\"No 'main' property is present\", function () {",
+                  "    const json = pm.response.json();",
+                  "    pm.expect(json).to.not.have.property(\"main\");",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{openweather_url}}/weather?q=Nowheresville123xyz&appid={{openweather_key}}",
+              "host": [
+                "{{openweather_url}}"
+              ],
+              "path": [
+                "weather"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "Nowheresville123xyz"
+                },
+                {
+                  "key": "appid",
+                  "value": "{{openweather_key}}"
+                }
+              ]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ]
+}

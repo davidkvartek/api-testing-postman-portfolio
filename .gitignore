@@ -1,0 +1,6 @@
+# Never commit pre-audit exports - they contain a live API key in plain text
+*_before_fixes.json
+*_fixed_after_audit.json
+
+# Postman scratch
+.postman/
