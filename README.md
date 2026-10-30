@@ -1,6 +1,6 @@
 # API Testing — Postman Portfolio
 
-A hand-built Postman collection against three public APIs, then **audited against a coverage
+A Postman collection against three public APIs, built with AI assistance, then **audited against a coverage
 checklist and rebuilt** — the audit is the point of this repo, not the green run.
 
 **23 requests · 129 assertions · 3 APIs · happy path and negative path**
